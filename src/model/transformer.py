@@ -2,7 +2,7 @@ import torch
 import math
 from typing import Optional
 from positional_encoding import PositionalEncoding
-class TahkeelTransformer(torch.nn.Module):
+class TashkeelTransformer(torch.nn.Module):
     def __init__(self,
                 src_vocab_size:int,
                 tgt_vocab_size:int,
