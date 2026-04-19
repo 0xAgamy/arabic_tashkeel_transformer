@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader
 import torch
 import os
 import sys
-from scheduler import WarmupCosineScheduler
+from .scheduler import WarmupCosineScheduler
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -77,7 +77,7 @@ def train(model:TashkeelTransformer,
           num_epochs:int =20,
           learning_rate:float= 1e-4,
           checkpoint_dir:str="checkpoints"):
-    os.mkdir(checkpoint_dir,exit_ok=True)
+    os.makedirs(checkpoint_dir,exist_ok=True)
 
     optimizer= torch.optim.AdamW(
         model.parameters(),

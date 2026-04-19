@@ -1,7 +1,7 @@
 import torch
 import math
 from typing import Optional
-from positional_encoding import PositionalEncoding
+from .positional_encoding import PositionalEncoding
 class TashkeelTransformer(torch.nn.Module):
     def __init__(self,
                 src_vocab_size:int,
@@ -97,7 +97,7 @@ class TashkeelTransformer(torch.nn.Module):
         tgt_mask = self.make_causal_mask(tgt_len, device)
         memory = self.encode(src, src_key_padding_mask)
 
-        decoder_out = self.decode(
+        decoder_out = self.decoder(
             tgt, memory,
             tgt_mask=tgt_mask,
             tgt_key_padding_mask=tgt_key_padding_mask,

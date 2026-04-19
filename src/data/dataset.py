@@ -1,7 +1,7 @@
 from torch.utils.data import Dataset, DataLoader
 import torch
 from typing import List
-from tokenizer import ArabicCharTokenizer
+from .tokenizer import ArabicCharTokenizer
 MAX_SRC_LEN=150 #max undiacritized chars per sample
 MAX_TGT_LEN=250 #  max diacritized chars (includes harakat between chars)
 
@@ -27,10 +27,13 @@ class TashkeelDataset(Dataset):
         self.pairs=[]
         for src,tgt in zip(sources,targets):
             src_ids=tokenizer.encode(src,add_sos=False,add_eos=True)
-            tgt_ids= tokenizer.encode(tgt,add_sos=True,add_eos=True)
-            #Labels = target shifted left 
-            tgt_labels=tokenizer.encode(tgt,add_sos=False,add_eos=True)
-
+            # tgt_ids= tokenizer.encode(tgt,add_sos=True,add_eos=True)
+            # #Labels = target shifted left 
+            # tgt_labels=tokenizer.encode(tgt,add_sos=False,add_eos=True)
+            tgt_full = tokenizer.encode(tgt, add_sos=False, add_eos=True)
+            tgt_ids = [tokenizer.SOS] + tgt_full[:-1]
+            # Labels = target shifted left (no SOS, but EOS included)
+            tgt_labels = tgt_full
             #Truncate
             src_ids=src_ids[:max_src_len]
             tgt_ids=tgt_ids[:max_tgt_len]
