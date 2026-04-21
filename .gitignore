@@ -13,3 +13,4 @@ ipython_config.py
 
 # let's ignore the raw dataset
 data/raw
+models/

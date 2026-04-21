@@ -78,6 +78,5 @@ model = TashkeelTransformer(
 n_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
 print(f"Model parameters: {n_params:,}")
 
-if __name__ == "__main__":
-  print("Start Learning")
-  train(model, train_loader, val_loader, DEVICE, num_epochs=NUM_EPOCHS)
+print("Start Learning")
+train(model, train_loader, val_loader, DEVICE, num_epochs=NUM_EPOCHS)

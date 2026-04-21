@@ -1,8 +1,11 @@
 import torch
 import torch.nn.functional as F
 from typing import List
-from src.model.transformer import TashkeelTransformer
-from src.data.tokenizer import ArabicCharTokenizer
+import os, sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from model.transformer import TashkeelTransformer
+from data.tokenizer import ArabicCharTokenizer
 MAX_TGT_LEN=250
 @torch.no_grad()
 def beam_search_decode(model:TashkeelTransformer,
