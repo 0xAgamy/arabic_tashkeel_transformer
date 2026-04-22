@@ -35,7 +35,7 @@ def load_epub_pair(path:str, max_chars: Optional[int]=None)-> Tuple[List[str], L
     if max_chars:
         raw = raw[:max_chars]
     
-    sentences_diac = re.split(r"[.؟!،\n]+", raw)
+    sentences_diac = re.split(r"[\n]+", raw)
     sentences_diac= [s.strip() for s in sentences_diac if len(s.strip()) > 5 ]
 
     source= [strip_harakat(s) for s in sentences_diac]

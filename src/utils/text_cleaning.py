@@ -13,16 +13,32 @@ HARAKAT = {
     "\u0670",   # superscript alef 
 }
 
+ARABIC_PUNCTUATION = {
+    "،",   # Arabic comma   U+060C  ← THIS was missing and caused the bug
+    "؟",   # Arabic question mark U+061F
+    ".",   # period
+    "!",   # exclamation
+    ":",   # colon (used in dialogue)
+    "؛",   # Arabic semicolon U+061B
+}
+
+
 
 def clean_arabic_text(text:str) -> str:
     """A Helper function to remove EPUB HTML tags, non-Arabic contenct and Harakat from the text  
     """
     text= unicodedata.normalize("NFKC",text)
+    text = text.replace("\u0640", "")   # tatweel ـ
+    text = text.replace("\u200F", "")   # RLM
+    text = text.replace("\u200E", "")   # LRM
+    text = text.replace("\u200B", "")   # zero-width space
+    text = text.replace("\uFEFF", "")   # BOM
 
-    allowed= ARABIC_LETTERS | HARAKAT | {" ", "،", ".", "؟", "!", "،", "\n"}
+
+    allowed= ARABIC_LETTERS | HARAKAT |ARABIC_PUNCTUATION |{" ","\n"}
     text= "".join(c for c in text if c in allowed or c.isspace())
 
-    text= re.sub(r"\s+"," ",text).strip()
+    text = re.sub(r"[ \t]+", " ", text).strip()
     return text
 
 
