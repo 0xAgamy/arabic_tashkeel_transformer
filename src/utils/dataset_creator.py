@@ -12,6 +12,8 @@ for book_path in books_path_list:
     source.append(src)
     target.append(tgt)
 
+flat_source = [item for sublist in source for item in sublist]
+flat_target = [item for sublist in target for item in sublist]
 
-save_lists_to_json(source,target,output_file=output_path)
+save_lists_to_json(flat_source,flat_target,output_file=output_path)
 

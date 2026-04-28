@@ -6,9 +6,13 @@ import re
 import json
 from text_cleaning import clean_arabic_text, strip_harakat
 
+from text_chunker import ArabicTextChunker
 
-
-
+chunker=ArabicTextChunker(
+    max_chunk_size=200,
+    min_chunk_size=20,
+    overlap_chars=0
+)
 
 
 def extract_text_from_epub(epub_path):
@@ -25,6 +29,8 @@ def extract_text_from_epub(epub_path):
             soup= BeautifulSoup(item.get_body_content(),"html.parser")
             text= soup.get_text(separator=" ")
             text= clean_arabic_text(text)
+           
+            
             if len(text) > 20 :
                 full_text.append(text)
     return " ".join(full_text)
@@ -32,15 +38,18 @@ def extract_text_from_epub(epub_path):
 
 def load_epub_pair(path:str, max_chars: Optional[int]=None)-> Tuple[List[str], List[str]]:
     raw = extract_text_from_epub(path)
-    if max_chars:
-        raw = raw[:max_chars]
-    
-    sentences_diac = re.split(r"[\n]+", raw)
-    sentences_diac= [s.strip() for s in sentences_diac if len(s.strip()) > 5 ]
+    chunks=chunker.chunk(raw)
+    src,tgt =[],[]
+    for raw in chunks:
+        sentences_diac = re.split(r"[\n]+", raw) 
+        sentences_diac= [s.strip() for s in sentences_diac if len(s.strip()) > 5 ]
 
-    source= [strip_harakat(s) for s in sentences_diac]
-    target= sentences_diac
-    return source,target
+        source= [strip_harakat(s) for s in sentences_diac]
+        target= sentences_diac
+        src.append(source)
+        tgt.append(target)
+
+    return src,tgt
 
 
 
