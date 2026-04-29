@@ -1,0 +1,8 @@
+torch
+ebooklib
+beautifulsoup4
+fastapi
+uvicorn
+pydantic
+tqdm
+numpy
