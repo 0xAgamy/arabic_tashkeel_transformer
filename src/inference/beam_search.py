@@ -6,7 +6,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from model.transformer import TashkeelTransformer
 from data.tokenizer import ArabicCharTokenizer
-MAX_TGT_LEN=250
+MAX_TGT_LEN=500
 @torch.no_grad()
 def beam_search_decode(
     model: TashkeelTransformer,

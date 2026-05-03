@@ -3,10 +3,12 @@ import json
 from pathlib import Path
 import os
 import sys
+from typing import Optional
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from data.tokenizer import ArabicCharTokenizer
 from .beam_search import beam_search_decode
+from .greedy_decode import greedy_decode
 from model.transformer import TashkeelTransformer
 from utils.text_chunker import ArabicTextChunker
 
@@ -51,29 +53,33 @@ class TashkeelPredictor:
         print(f"Model loaded on {self.device}")
 
 
-    def _diacritize_single(self, text: str, beam_size: int = 4)->str:
+    def _diacritize_single(self, text: str,use_beam:Optional[bool]=False, beam_size: int = 4)->str:
         src_ids = self.tokenizer.encode(text, add_sos=False, add_eos=True)
         max_len = self.max_src_len
         if len(src_ids) > max_len:
             src_ids = src_ids[:max_len]
         
         with torch.no_grad():
-            return beam_search_decode(
-                self.model, src_ids, self.tokenizer, self.device, beam_size=beam_size
+            if use_beam:
+                return beam_search_decode(
+                    self.model, src_ids, self.tokenizer, self.device, beam_size=beam_size
+                )
+            return greedy_decode(
+                self.model, src_ids, self.tokenizer, self.device,
             )
            
 
 
-    def diacritize(self, text: str, beam_size: int = 4) -> str:
+    def diacritize(self, text: str, use_beam:Optional[bool]=False, beam_size: int = 4) -> str:
         """Diacritize a single Arabic sentence."""
         if len(text.strip()) == 0: return ""
         
         if len(text.strip()) <= self.chunker.max_chunk_size:
-            return self._diacritize_single(text.strip(), beam_size)
+            return self._diacritize_single(text.strip(),use_beam, beam_size)
 
         chunks= self.chunker.chunk(text.strip())
         diacritized_chunks = [
-            self._diacritize_single(chunk,  beam_size)
+            self._diacritize_single(chunk,use_beam,  beam_size)
             for chunk in chunks
         ]
         return " ".join(diacritized_chunks)
