@@ -9,6 +9,7 @@ PyTorch implementation of a character-level Seq2Seq Transformer for Arabic Tashk
 - **Transformer Encoder-Decoder**: From-scratch implementation with multi-head attention & positional encoding
 	
 - **Beam Search Decoding**: Explore multiple hypotheses for higher-quality diacritization
+- **Greedy Search**: Fast, lightweight inference option alongside beam 
 
 - **Smart Text Chunking**: Handle arbitrarily long inputs with sentence-aware splitting
 
@@ -19,16 +20,6 @@ PyTorch implementation of a character-level Seq2Seq Transformer for Arabic Tashk
 
 ## Installation
 ### Requirements
-```bash
-torch
-ebooklib
-beautifulsoup4
-fastapi
-uvicorn
-pydantic
-tqdm
-numpy
-```
 ```bash
 pip install -r requirements.txt
 ```
@@ -50,6 +41,8 @@ pip install -r requirements.txt
 ├── LICENSE
 ├── notebooks
 │   └── arabic-tashkeel.ipynb
+├── postman_collection
+│   └── Arabic-Tashkeel.postman_collection.json
 ├── README.md
 ├── requirements.txt
 ├── scripts
@@ -62,6 +55,7 @@ pip install -r requirements.txt
 │   │   └── metrics.py
 │   ├── inference
 │   │   ├── beam_search.py
+│   │   ├── greedy_decode.py
 │   │   ├── predictor.py
 │   ├── model
 │   │   ├── positional_encoding.py
@@ -136,6 +130,9 @@ The standard metric for tashkeel tasks:
 ### Results
 - **Prototype (11 EPUBs)** : 8.6% DER
 - **Expanded (70 EPUBs)** : 3.5% DER , & 2.0 % CER
+## Postman collection
+
+-  [Download post man collection](/postman_collection/Arabic-Tashkeel.postman_collection.json)
 
 ##  Acknowledgments
 

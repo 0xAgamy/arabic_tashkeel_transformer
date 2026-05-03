@@ -1,8 +1,7 @@
-torch
-ebooklib
-beautifulsoup4
-fastapi
-uvicorn
-pydantic
-tqdm
-numpy
+torch==2.11.0+cu126
+ebooklib==0.20
+beautifulsoup4==4.14.3
+fastapi==0.136.0
+uvicorn==0.44.0
+pydantic==2.13.3
+tqdm==4.67.3
