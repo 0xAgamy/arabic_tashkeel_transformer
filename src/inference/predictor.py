@@ -59,12 +59,12 @@ class TashkeelPredictor:
         
         with torch.no_grad():
             return beam_search_decode(
-                self.model, src_ids, self.tokenizer, self.device, beam_search=beam_size
+                self.model, src_ids, self.tokenizer, self.device, beam_size=beam_size
             )
            
 
 
-    def diacritize(self, text: str, use_beam: bool = True, beam_size: int = 4) -> str:
+    def diacritize(self, text: str, beam_size: int = 4) -> str:
         """Diacritize a single Arabic sentence."""
         if len(text.strip()) == 0: return ""
         
@@ -79,7 +79,7 @@ class TashkeelPredictor:
         return " ".join(diacritized_chunks)
 
 
-    def diacritize_batch(self, texts: list, use_beam: bool = True, beam_size: int = 4) -> list:
-        """Process multiple sentences efficiently."""
-        return [self.diacritize(t, use_beam, beam_size) for t in texts]
+    # def diacritize_batch(self, texts: list, use_beam: bool = True, beam_size: int = 4) -> list:
+    #     """Process multiple sentences efficiently."""
+    #     return [self.diacritize(t, use_beam, beam_size) for t in texts]
     
