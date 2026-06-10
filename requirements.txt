@@ -1,4 +1,6 @@
 torch==2.11.0+cu126
+scikit-learn==1.9.0
+editdistance==0.8.1
 ebooklib==0.20
 beautifulsoup4==4.14.3
 fastapi==0.136.0

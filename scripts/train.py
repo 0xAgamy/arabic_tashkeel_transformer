@@ -8,14 +8,15 @@ from torch.utils.data import DataLoader
 from src.data.dataset import TashkeelDataset, collate_fn
 from src.model.transformer import TashkeelTransformer
 from src.training.trainer import train
+from sklearn.model_selection import train_test_split
 
 ## Default 
-#DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-DEVICE='cpu'
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 BATCH_SIZE = 32
 D_MODEL = 256
 NUM_EPOCHS = 50
-TRAIN_SPLIT = 0.9
+
 
 
 ## Get data
@@ -27,24 +28,33 @@ with open("data/processed/data.json", 'r')as f:
 sources = [s for item in data for s in item["src"]]
 targets = [t for item in data for t in item["tgt"]]
 
-print(f"Loaded {len(sources)} sentence pairs.")
-print(f"Example:\n  SRC: {sources[0]}\n  TGT: {targets[0]}")
 
 
 ## Get Tokenizer
 
 tokenizer = ArabicCharTokenizer()
 tokenizer.build_vocab(sources + targets)  # build from BOTH sides
-print(f"Vocab size: {tokenizer.vocab_size}")
+
 
 
 ## split dataset
+# _____ Data splitting
+train_src, temp_src, train_tgt, temp_tgt = train_test_split(
+    sources,
+    targets,
+    test_size=0.2,
+    random_state=42,
+    shuffle=True
+)
 
-
-n = len(sources)
-split = int(n * TRAIN_SPLIT)
-train_src, train_tgt = sources[:split], targets[:split]
-val_src, val_tgt = sources[split:], targets[split:]
+# Split temp into 10% val and 10% test
+val_src, test_src, val_tgt, test_tgt = train_test_split(
+    temp_src,
+    temp_tgt,
+    test_size=0.5,
+    random_state=42,
+    shuffle=True
+)
 
 train_dataset = TashkeelDataset(train_src, train_tgt, tokenizer)
 val_dataset = TashkeelDataset(val_src, val_tgt, tokenizer)
@@ -57,7 +67,7 @@ val_loader = DataLoader(
   val_dataset, batch_size=BATCH_SIZE, shuffle=False,
   collate_fn=collate_fn, num_workers=2, pin_memory=True
 )
-
+print(f" Training len : {len(train_src)}\n Val len : {len(val_src)} \n Test len : {len(test_src)}  ")
 print(f"Train batches: {len(train_loader)} | Val batches: {len(val_loader)}")
 
 
