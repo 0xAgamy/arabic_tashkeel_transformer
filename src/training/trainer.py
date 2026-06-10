@@ -4,7 +4,7 @@ import torch
 import os
 import sys
 from .scheduler import WarmupCosineScheduler
-
+import pandas as pd
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.model.transformer import TashkeelTransformer
@@ -78,7 +78,7 @@ def train(model:TashkeelTransformer,
           learning_rate:float= 1e-4,
           checkpoint_dir:str="checkpoints"):
     os.makedirs(checkpoint_dir,exist_ok=True)
-
+    history=[]
     optimizer= torch.optim.AdamW(
         model.parameters(),
         lr=learning_rate,
@@ -119,4 +119,10 @@ def train(model:TashkeelTransformer,
             )
             print(f"Saved best model (val_loss={val_loss:.4f})")
 
+        history.append({
+        "epoch": epoch + 1,
+        "train_loss": train_loss,
+        "val_loss": val_loss,
+        })
+        pd.DataFrame(history).to_csv(f"{checkpoint_dir}/training_log.csv", index=False)
 
