@@ -1,5 +1,5 @@
 # Arabic Tashkeel Transformer
-PyTorch implementation of a character-level Seq2Seq Transformer for Arabic Tashkeel (diacritization).
+A character-level Transformer encoder-decoder that adds diacritical marks (تشكيل) to Arabic text, trained from scratch on Arabic EPUB books using PyTorch..
 
 ##  Features
 
@@ -68,8 +68,6 @@ pip install -r requirements.txt
 │       ├── epub_loader.py
 │       ├── text_chunker.py
 │       └── text_cleaning.py
-└── tests
-    └── test_tokenizer.py
 ```
 
 ## Model Architecture
@@ -118,6 +116,9 @@ pip install -r requirements.txt
 ## Dataset
 - we collect dataset from `أولو العلم `Telegram channel for providing high-quality diacritized Arabic EPUBs
 
+## Training Losses Results
+![Training Results](images/Training_Losses.png)
+
 ## Evaluation
 
 **Diacritic Error Rate (DER)**
@@ -127,9 +128,22 @@ The standard metric for tashkeel tasks:
 - Computed by aligning prediction/reference on base characters
 - Ignores insertion/deletion of base characters (focuses on diacritic accuracy)
 
+**Character Error Rate (CER) using Levenshtein distance.** 
+- It measures the minimum number of single-character edits (insertions, deletions, substitutions) required to transform the predicted text into the reference text.
+- Lower values indicate better performance (0.0 = perfect match).
+
+**Exact Match**
+
+- measures the proportion of prediction–reference pairs that are completely identical.
+- A prediction is counted as correct only if it matches the reference exactly at the character level, including all diacritics.
 ### Results
-- **Prototype (11 EPUBs)** : 8.6% DER
-- **Expanded (70 EPUBs)** : 3.5% DER , & 2.0 % CER
+![Evaluation Metrics](images/evaluation_metrics.png)
+
+! Evaluation was performed on a held-out test set of 5,257 samples.
+- CER ≈ 4.7% → low character-level error rate, indicating strong base text preservation
+- DER ≈ 7.6% → good diacritic accuracy, consistent with high-quality tashkeel modeling
+- DER_std ≈ 0.136 → variability across samples (some sentences are significantly harder)
+- Exact Match ≈ 24.4% → strict full-sentence correctness remains challenging, as expected for diacritization tasks
 ## Postman collection
 
 -  [Download post man collection](/postman_collection/Arabic-Tashkeel.postman_collection.json)
