@@ -14,53 +14,81 @@ def beam_search_decode(
     tokenizer: ArabicCharTokenizer,
     device: torch.device,
     beam_size: int = 4,
-    max_len: int = MAX_TGT_LEN,
+    max_len: int = 500,
     length_penalty: float = 0.6,
 ) -> str:
-   
     model.eval()
- 
+    
+  
     src = torch.tensor([src_ids], dtype=torch.long, device=device)
-    memory = model.encode(src)  # (1, src_len, d_model)
- 
-    # Each beam: (sequence of token IDs, cumulative log probability)
-    beams: List[Tuple[List[int], float]] = [([tokenizer.SOS], 0.0)]
-    completed: List[Tuple[List[int], float]] = []
- 
-    for step in range(max_len):
-        if not beams:
+    memory = model.encode(src)
+    
+    
+    max_mask = model.make_causal_mask(max_len, device)
+    
+    
+    sequences = torch.full((1, 1), tokenizer.SOS, dtype=torch.long, device=device)
+    scores = torch.zeros(1, device=device)
+    
+    completed_sequences = []
+    completed_scores = []
+    
+    for step in range(max_len - 1):
+        current_beam_size = sequences.size(0)
+        current_len = sequences.size(1)
+        
+        
+        mem_expanded = memory.expand(current_beam_size, -1, -1).contiguous()
+        
+       
+        tgt_mask = max_mask[:current_len, :current_len]
+        
+        
+        decoder_out = model.decoder(sequences, mem_expanded, tgt_mask=tgt_mask)
+        logits = model.output_projection(decoder_out[:, -1, :]) )
+        log_probs = F.log_softmax(logits, dim=-1)
+        
+       
+        next_scores = scores.unsqueeze(1) + log_probs 
+        next_scores_flat = next_scores.view(-1)
+        
+        k = min(beam_size, next_scores_flat.size(0))
+        topk_scores, topk_ids = torch.topk(next_scores_flat, k)
+        
+        beam_ids = topk_ids // tokenizer.vocab_size
+        token_ids = topk_ids % tokenizer.vocab_size
+        
+        sequences = sequences[beam_ids]
+        sequences = torch.cat([sequences, token_ids.unsqueeze(1)], dim=1)
+        scores = topk_scores
+        
+        is_eos = (token_ids == tokenizer.EOS)
+        
+        if is_eos.any():
+            for i in range(k):
+                if is_eos[i]:
+                    seq = sequences[i].tolist()
+                    score = scores[i].item()
+                    norm_score = score / (len(seq) ** length_penalty)
+                    completed_sequences.append(seq)
+                    completed_scores.append(norm_score)
+            
+            active_mask = ~is_eos
+            sequences = sequences[active_mask]
+            scores = scores[active_mask]
+            
+        if sequences.size(0) == 0:
             break
- 
-        candidates: List[Tuple[List[int], float]] = []
- 
-        for seq, score in beams:
-            tgt = torch.tensor([seq], dtype=torch.long, device=device)
-            tgt_mask = model.make_causal_mask(len(seq), device)
- 
-            decoder_out = model.decoder(tgt, memory, tgt_mask=tgt_mask)
-            logits = model.output_projection(decoder_out[:, -1, :])  
-            log_probs = F.log_softmax(logits, dim=-1).squeeze(0)    
- 
-         
-            topk_log_probs, topk_ids = log_probs.topk(beam_size)
-            for log_p, tok_id in zip(topk_log_probs.tolist(), topk_ids.tolist()):
-                new_seq = seq + [tok_id]
-                new_score = score + log_p
- 
-                if tok_id == tokenizer.EOS:
-                   
-                    normalized = new_score / (len(new_seq) ** length_penalty)
-                    completed.append((new_seq, normalized))
-                else:
-                    candidates.append((new_seq, new_score))
- 
-
-        candidates.sort(key=lambda x: x[1], reverse=True)
-        beams = candidates[:beam_size]
-
-    if not completed:
-        completed = [(seq, score / (len(seq) ** length_penalty)) for seq, score in beams]
- 
-
-    best_seq = max(completed, key=lambda x: x[1])[0]
+            
+    if not completed_sequences:
+        best_idx = torch.argmax(scores).item()
+        best_seq = sequences[best_idx].tolist()
+        best_score = scores[best_idx].item()
+        norm_score = best_score / (len(best_seq) ** length_penalty)
+        completed_sequences.append(best_seq)
+        completed_scores.append(norm_score)
+        
+    best_overall_idx = max(range(len(completed_scores)), key=lambda i: completed_scores[i])
+    best_seq = completed_sequences[best_overall_idx]
+    
     return tokenizer.decode(best_seq)
